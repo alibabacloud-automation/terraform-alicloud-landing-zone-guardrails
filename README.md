@@ -7,7 +7,7 @@ Currently, this module only contains detective guardrails.
 
 ```
 module "guardrails" {
-  source = "terraform-alicloud-modules/landingzone-guardrails/alicloud"
+  source = "alibabacloud-automation/landingzone-guardrails/alicloud"
 
   detective_guardrails = [
     {
