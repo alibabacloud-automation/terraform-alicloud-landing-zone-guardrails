@@ -27,7 +27,7 @@ resource "alicloud_config_aggregator" "enterprise" {
     for_each = local.accounts
 
     content {
-      account_id = aggregator_accounts.value["account_id"]
+      account_id   = aggregator_accounts.value["account_id"]
       account_name = aggregator_accounts.value["display_name"]
       account_type = "ResourceDirectory"
     }
@@ -57,36 +57,36 @@ resource "alicloud_config_aggregator" "enterprise" {
 # Create config rules
 resource "alicloud_config_aggregate_config_rule" "detective_guardrails" {
   for_each = {
-    for rule in var.detective_guardrails: rule.rule_name => rule
+    for rule in var.detective_guardrails : rule.rule_name => rule
   }
 
   aggregate_config_rule_name = each.value.rule_name
-  aggregator_id = alicloud_config_aggregator.enterprise.id
-  source_identifier = each.value.rule_identifier
-  source_owner = "ALIYUN"
-  risk_level = var.config_compliance_pack_risk_level
+  aggregator_id              = alicloud_config_aggregator.enterprise.id
+  source_identifier          = each.value.rule_identifier
+  source_owner               = "ALIYUN"
+  risk_level                 = var.config_compliance_pack_risk_level
   config_rule_trigger_types  = "ConfigurationItemChangeNotification"
   resource_types_scope       = each.value.resource_types_scope
   input_parameters = {
-    for parameter in try(each.value.parameters, []): parameter.name => parameter.value
+    for parameter in try(each.value.parameters, []) : parameter.name => parameter.value
   }
-  tag_key_scope = each.value.tag_scope_key
+  tag_key_scope   = each.value.tag_scope_key
   tag_value_scope = each.value.tag_scope_value
 }
 
 locals {
   # Transform config rule ids to match compliace pack parameter
   config_rule_ids = [
-    for rule_resource in alicloud_config_aggregate_config_rule.detective_guardrails: split(":", rule_resource.id)[1]
+    for rule_resource in alicloud_config_aggregate_config_rule.detective_guardrails : split(":", rule_resource.id)[1]
   ]
 }
 
 # Create a compliance pack and add those config rules to compliance pack
 resource "alicloud_config_aggregate_compliance_pack" "detective_guardrails" {
   aggregate_compliance_pack_name = var.config_compliance_pack_name
-  aggregator_id = alicloud_config_aggregator.enterprise.id
-  description = var.config_compliance_pack_description
-  risk_level = var.config_compliance_pack_risk_level
+  aggregator_id                  = alicloud_config_aggregator.enterprise.id
+  description                    = var.config_compliance_pack_description
+  risk_level                     = var.config_compliance_pack_risk_level
   dynamic "config_rule_ids" {
     for_each = local.config_rule_ids
 
